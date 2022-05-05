@@ -11,6 +11,7 @@ classifier = TextClassifier.load('en-sentiment')
 #Flair Setup:https://rileymjones.medium.com/sentiment-anaylsis-with-the-flair-nlp-library-cfe830bfd0f4
 #Flair Advantages:https://www.analyticsvidhya.com/blog/2019/02/flair-nlp-library-python/ 
 #Flair Comparison:https://towardsdatascience.com/the-best-python-sentiment-analysis-package-1-huge-common-mistake-d6da9ad6cdeb
+
 def clean(raw):
     """ Remove hyperlinks and markup """
     result = re.sub("<[a][^>]*>(.+?)</[a]>", 'Link.', raw)
@@ -27,26 +28,36 @@ def clean(raw):
 
 def make_sentences(text):
     """ Break apart text into a list of sentences """
-    sentences = [sent for sent in split_single(text)]
+    #if len(str(tweet.content))==0 or str(tweet.content).strip=="":
+        #return "NaN"
+    #sentences = [sent for sent in split_single(text)]
+    sentences=[]
+    for sent in split_single(text):
+        if sent=="":
+            sent="Empty Sentence"
+        else:
+            sentences.append(sent)
     return sentences
 
 def predict(sentence):
     """ Predict the sentiment of a sentence """
-    if sentence == "":
-        return 0
     text = Sentence(sentence)
-   
-    classifier.predict(text)
-    
-    value = text.labels[0].to_dict()['value'] 
-    
-   
-    
+    if sentence=="" or text.text == "":
+        value=0;
+    else:
+        #print(tweet.date)
+        #print(tweet.id)
+        #print(text)
+        classifier.predict(text)
+        
+        
+        value = text.labels[0].to_dict()['value'] 
     return value
 def get_scores(sentences):
     """ Call predict on every sentence of a text """
     results = []
-    
+    if "" in sentences:
+        sentences.remove("")
     for i in range(0, len(sentences)): 
         results.append(predict(sentences[i]))
     return results
@@ -60,45 +71,45 @@ def get_sum(scores):
 
 
 # Create month of March
-daysMarch2019 = ["2019-03-01", "2019-03-02", "2019-03-03", "2019-03-04", "2019-03-05", "2019-03-06", "2019-03-07", "2019-03-08", "2019-03-09", "2019-03-10", "2019-03-11", "2019-03-12", "2019-03-13", "2019-03-14", "2019-03-15", "2019-03-16", "2019-03-17", "2019-03-18", "2019-03-19", "2019-03-20", "2019-03-21", "2019-03-22", "2019-03-23", "2019-03-24", "2019-03-25", "2019-03-26", "2019-03-27", "2019-03-28", "2019-03-29", "2019-03-30", "2019-03-31", "2019-04-01"]
+daysMarch2019 = ["2019-02-01", "2019-02-02", "2019-02-03", "2019-02-04", "2019-02-05", "2019-02-06", "2019-02-07", "2019-02-08", "2019-02-09", "2019-02-10", "2019-02-11", "2019-02-12", "2019-02-13", "2019-02-14", "2019-02-15", "2019-02-16", "2019-02-17", "2019-02-18", "2019-02-19", "2019-02-20", "2019-02-21", "2019-02-22", "2019-02-23", "2019-02-24", "2019-02-25", "2019-02-26", "2019-02-27", "2019-02-28","2019-03-01"]
 march_2019_dict = {}
 #Keywords to Check: Democracy, Liberals, Conservatives, Fake News
 #Samir: March,2019
 #Quinn: March,2020
 #Scott: March,2021
-#Will:  March,2022
+#Will:  March,Feb,2022
 
-for counter in range(31):
+for counter in range(29):
     print(counter)
     pos=0.0
     neg=0.0
-    queryString = "Democrats since:" + daysMarch2019[counter] + " " + "until:" + daysMarch2019[counter+1]
+    if counter==10:
+        break
+    queryString = "Democracy since:" + daysMarch2019[counter] + " " + "until:" + daysMarch2019[counter+1]
     for i, tweet in enumerate(sntwitter.TwitterSearchScraper(queryString).get_items()):
         if i==1:
             first_tweet=tweet.content
         if i>1 and tweet.content in first_tweet:
             break
-        if not tweet.inReplyToUser and not ("@" in str(tweet.content)) and str(tweet.lang) == 'en' and 'http' not in str(tweet.content) :
+        if not tweet.inReplyToUser and not ("@" in str(tweet.content)) and str(tweet.lang) == 'en' and 'http' not in str(tweet.content) and len(str(tweet.content))!=0 :
+            if tweet.content == "":
+                stringa="No content"    
             stringa = str(tweet.content)
             stringa= clean(stringa)
             sentences= make_sentences(stringa)
-            
             if 'POSITIVE' in get_scores(sentences):
                 pos+=1
             else:
                 neg+=1
-    
-
     total=pos+neg
-
     ratio_pos=pos/total
     ratio_neg=neg/total
     march_2019_dict[counter+1]=[total,ratio_pos,ratio_neg]
-    print(march_2019_dict)
-df=pd.DataFrame(march_2019_dict.items(), columns=['Day','Total','PosRatio','NegRatio'])
-print(march_2019_dict)
+    
+
+df=pd.DataFrame(march_2019_dict.items(), columns=['Day','Ratios'])
 
 
-filepath = Path('Users/Samir Fridhi/FlairRatioTest.csv')  
+filepath = Path('Users/Samir Fridhi/FlairRatio_February2019_Democracy.csv')  
 filepath.parent.mkdir(parents=True, exist_ok=True)  
 df.to_csv(filepath)  
