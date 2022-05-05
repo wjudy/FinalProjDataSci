@@ -15,3 +15,11 @@ CODES:
 
 Plots:
 - BarPlots - has the red and green bar plots comparing ratios and frequencies
+
+
+SPLIT: contains all of the CSV's post formatted
+“Democracy” - March & February of 2018, 2019, 2020, 2021, & 2021
+“Democracy” - January of 2020 & 2021
+“Fake News” - March & February of 2018, 2020, 2021
+“Conservatives” & “Liberals” - March of 2020
+
